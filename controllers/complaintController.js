@@ -1,0 +1,130 @@
+const Complaint = require('../models/complaintModel')
+const ErrorHandler = require('../utils/ErrorHandler')
+const catchAsyncError = require('../middleware/catchAsyncError')
+const generateTicketNumber = require('../utils/generateTicketNumber')
+const sendEmail = require('../utils/sendEmail')
+const cloudinary = require('../utils/cloudinary')
+
+const uploadToCloudinary = async (file, evidenceType) => {
+  const result = await cloudinary.uploader.upload(file.tempFilePath, {
+    folder: 'nagorik_kontho/evidences',
+    resource_type: 'auto',
+  })
+
+  return {
+    evidenceType,
+    public_id: result.public_id,
+    url: result.secure_url,
+    originalName: file.name,
+    format: result.format,
+  }
+}
+
+exports.createComplaint = catchAsyncError(async (req, res, next) => {
+  const {
+    problemType,
+    title,
+    description,
+    district,
+    upazila,
+    postalCode,
+    area,
+    privacy,
+    phone,
+    email,
+  } = req.body
+
+  if (!email) {
+    return next(
+      new ErrorHandler('Email is required to send ticket number', 400),
+    )
+  }
+
+  if (!req.files || (!req.files.image && !req.files.file && !req.files.audio)) {
+    return next(
+      new ErrorHandler(
+        'Please upload at least one evidence: image, file, or audio',
+        400,
+      ),
+    )
+  }
+
+  const evidences = []
+
+  if (req.files.image) {
+    const images = Array.isArray(req.files.image)
+      ? req.files.image
+      : [req.files.image]
+
+    for (const image of images) {
+      const uploadedImage = await uploadToCloudinary(image, 'image')
+      evidences.push(uploadedImage)
+    }
+  }
+
+  if (req.files.file) {
+    const files = Array.isArray(req.files.file)
+      ? req.files.file
+      : [req.files.file]
+
+    for (const file of files) {
+      const uploadedFile = await uploadToCloudinary(file, 'file')
+      evidences.push(uploadedFile)
+    }
+  }
+
+  if (req.files.audio) {
+    const audios = Array.isArray(req.files.audio)
+      ? req.files.audio
+      : [req.files.audio]
+
+    for (const audio of audios) {
+      const uploadedAudio = await uploadToCloudinary(audio, 'audio')
+      evidences.push(uploadedAudio)
+    }
+  }
+
+  const ticketNumber = generateTicketNumber(problemType)
+
+  const complaint = await Complaint.create({
+    problemType,
+    title,
+    description,
+    district,
+    upazila,
+    postalCode,
+    area,
+    privacy,
+    phone,
+    email,
+    ticketNumber,
+    evidences,
+    tracking: [
+      {
+        title: 'Complaint Submitted',
+        message:
+          'Your complaint has been successfully submitted to the system.',
+        updatedBy: 'system',
+      },
+    ],
+  })
+
+  const message = `Thank you for submitting your complaint.
+
+Your ticket number is: ${ticketNumber}
+
+Please keep this ticket number for tracking your complaint status.`
+
+  await sendEmail({
+    email,
+    subject: 'Your Complaint Ticket Number',
+    message,
+  })
+
+  res.status(201).json({
+    success: true,
+    message: 'Complaint submitted successfully. Ticket number sent to email.',
+    ticketNumber,
+    complaint,
+  })
+})
