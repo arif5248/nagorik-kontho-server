@@ -129,4 +129,4 @@ const complaintSchema = new mongoose.Schema(
   { timestamps: true },
 )
 
-module.exports = mongoose.model('Complaints', complaintSchema)
+module.exports = mongoose.model('Complaint', complaintSchema)
