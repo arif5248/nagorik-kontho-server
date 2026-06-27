@@ -5,6 +5,7 @@ const errorMiddleware = require('./middleware/error')
 const fileUpload = require('express-fileupload')
 
 const complaint = require('./routes/complaintRoute')
+const otp = require('./routes/otpRoutes')
 
 const app = express()
 
@@ -28,5 +29,6 @@ app.get('/', (req, res) => {
 app.use(errorMiddleware)
 
 app.use('/api/v1', complaint)
+app.use('/api/v1', otp)
 
 module.exports = app

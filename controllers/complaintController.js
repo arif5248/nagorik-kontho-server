@@ -128,3 +128,28 @@ Please keep this ticket number for tracking your complaint status.`
     complaint,
   })
 })
+
+exports.getComplaintByTicketNumber = catchAsyncError(async (req, res, next) => {
+  const { ticketNumber } = req.params
+
+  if (!ticketNumber) {
+    return next(new ErrorHandler('Ticket number is required', 400))
+  }
+  const complaint = await Complaint.findOne({ ticketNumber })
+
+  if (!complaint) {
+    return next(new ErrorHandler('Complaint not found', 404))
+  }
+
+  const complaintData = complaint.toObject()
+
+  if (complaintData.privacy === 'private') {
+    delete complaintData.email
+    delete complaintData.phone
+  }
+
+  res.status(200).json({
+    success: true,
+    complaint: complaintData,
+  })
+})
