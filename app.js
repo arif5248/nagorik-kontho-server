@@ -25,10 +25,10 @@ app.get('/', (req, res) => {
   res.send('Server is running successfully')
 })
 
-// Error Middleware
-app.use(errorMiddleware)
-
 app.use('/api/v1', complaint)
 app.use('/api/v1', otp)
+
+// Error Middleware
+app.use(errorMiddleware)
 
 module.exports = app

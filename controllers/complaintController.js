@@ -5,6 +5,45 @@ const generateTicketNumber = require('../utils/generateTicketNumber')
 const sendEmail = require('../utils/sendEmail')
 const cloudinary = require('../utils/cloudinary')
 
+exports.getDashboardData = catchAsyncError(async (req, res, next) => {
+  const allComplaints = await Complaint.find()
+  console.log(allComplaints)
+  const totalComplaints = await Complaint.countDocuments()
+
+  const resolvedComplaints = await Complaint.countDocuments({
+    status: 'resolved',
+  })
+
+  const activeComplaints = await Complaint.countDocuments({
+    status: {
+      $in: ['submitted', 'under_review', 'investigating', 'in_progress'],
+    },
+  })
+
+  const rejectedComplaints = await Complaint.countDocuments({
+    status: 'rejected',
+  })
+
+  const activeCitizens = await Complaint.distinct('email')
+
+  const resolutionRate =
+    totalComplaints > 0
+      ? Math.round((resolvedComplaints / totalComplaints) * 100)
+      : 0
+
+  res.status(200).json({
+    success: true,
+    dashboard: {
+      totalComplaints,
+      resolvedComplaints,
+      activeComplaints,
+      rejectedComplaints,
+      activeCitizens: activeCitizens.length,
+      resolutionRate,
+    },
+  })
+})
+
 const uploadToCloudinary = async (file, evidenceType) => {
   const result = await cloudinary.uploader.upload(file.tempFilePath, {
     folder: 'nagorik_kontho/evidences',
@@ -137,7 +176,7 @@ exports.getComplaintByTicketNumber = catchAsyncError(async (req, res, next) => {
   }
   const complaint = await Complaint.findOne({ ticketNumber })
 
-  if (!complaint) {
+  if (!complaint || null) {
     return next(new ErrorHandler('Complaint not found', 404))
   }
 
