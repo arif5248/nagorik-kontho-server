@@ -44,6 +44,71 @@ exports.getDashboardData = catchAsyncError(async (req, res, next) => {
   })
 })
 
+exports.getRecentComplaints = catchAsyncError(async (req, res, next) => {
+  const recentComplaints = await Complaint.find()
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .select(
+      'title problemType district upazila area ticketNumber status privacy createdAt',
+    )
+
+  res.status(200).json({
+    success: true,
+    recentComplaints,
+  })
+})
+
+exports.getCategoryStats = catchAsyncError(async (req, res, next) => {
+  const categoryStats = await Complaint.aggregate([
+    {
+      $group: {
+        _id: '$problemType',
+        totalComplaints: { $sum: 1 },
+        resolvedComplaints: {
+          $sum: {
+            $cond: [{ $eq: ['$status', 'resolved'] }, 1, 0],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        problemType: '$_id',
+        totalComplaints: 1,
+        resolvedComplaints: 1,
+        resolutionRate: {
+          $cond: [
+            { $gt: ['$totalComplaints', 0] },
+            {
+              $round: [
+                {
+                  $multiply: [
+                    {
+                      $divide: ['$resolvedComplaints', '$totalComplaints'],
+                    },
+                    100,
+                  ],
+                },
+                0,
+              ],
+            },
+            0,
+          ],
+        },
+      },
+    },
+    {
+      $sort: { totalComplaints: -1 },
+    },
+  ])
+
+  res.status(200).json({
+    success: true,
+    categoryStats,
+  })
+})
+
 const uploadToCloudinary = async (file, evidenceType) => {
   const result = await cloudinary.uploader.upload(file.tempFilePath, {
     folder: 'nagorik_kontho/evidences',
