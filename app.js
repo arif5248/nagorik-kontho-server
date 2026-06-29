@@ -6,6 +6,7 @@ const fileUpload = require('express-fileupload')
 
 const complaint = require('./routes/complaintRoute')
 const otp = require('./routes/otpRoutes')
+const auth = require('./routes/authRoute')
 
 const app = express()
 
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1', complaint)
 app.use('/api/v1', otp)
+app.use('/api/v1/auth', auth)
 
 // Error Middleware
 app.use(errorMiddleware)

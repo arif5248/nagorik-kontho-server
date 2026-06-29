@@ -125,6 +125,30 @@ const complaintSchema = new mongoose.Schema(
       ],
       default: 'submitted',
     },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high'],
+      default: 'medium',
+    },
+
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+
+    assignedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+
+    assignedAt: {
+      type: Date,
+    },
+
+    adminNote: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true },
 )
