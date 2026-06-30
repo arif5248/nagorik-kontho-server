@@ -208,7 +208,8 @@ exports.createComplaint = catchAsyncError(async (req, res, next) => {
         title: 'Complaint Submitted',
         message:
           'Your complaint has been successfully submitted to the system.',
-        updatedBy: 'system',
+        status: 'submitted',
+        updatedByType: 'system',
       },
     ],
   })

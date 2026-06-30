@@ -13,6 +13,7 @@ const complaintSchema = new mongoose.Schema(
         'land',
         'justice',
         'other',
+        'master_admin',
       ],
     },
 
@@ -25,26 +26,31 @@ const complaintSchema = new mongoose.Schema(
     description: {
       type: String,
       required: [true, 'Please enter description'],
+      trim: true,
     },
 
     district: {
       type: String,
       required: [true, 'Please select district'],
+      trim: true,
     },
 
     upazila: {
       type: String,
       required: [true, 'Please select upazila'],
+      trim: true,
     },
 
     postalCode: {
       type: String,
       required: [true, 'Please select postal code'],
+      trim: true,
     },
 
     area: {
       type: String,
       required: [true, 'Please enter area'],
+      trim: true,
     },
 
     privacy: {
@@ -55,17 +61,21 @@ const complaintSchema = new mongoose.Schema(
 
     phone: {
       type: String,
+      trim: true,
     },
 
     email: {
       type: String,
       required: [true, 'Please enter email'],
+      lowercase: true,
+      trim: true,
     },
 
     ticketNumber: {
       type: String,
       unique: true,
       required: true,
+      trim: true,
     },
 
     evidences: [
@@ -92,27 +102,6 @@ const complaintSchema = new mongoose.Schema(
       },
     ],
 
-    tracking: [
-      {
-        title: {
-          type: String,
-          required: true,
-        },
-        message: {
-          type: String,
-          required: true,
-        },
-        updatedBy: {
-          type: String,
-          default: 'system',
-        },
-        date: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-
     status: {
       type: String,
       enum: [
@@ -125,6 +114,7 @@ const complaintSchema = new mongoose.Schema(
       ],
       default: 'submitted',
     },
+
     priority: {
       type: String,
       enum: ['low', 'medium', 'high'],
@@ -134,21 +124,71 @@ const complaintSchema = new mongoose.Schema(
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      default: null,
     },
 
     assignedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      default: null,
     },
 
     assignedAt: {
       type: Date,
+      default: null,
     },
 
     adminNote: {
       type: String,
       trim: true,
+      default: '',
     },
+
+    tracking: [
+      {
+        title: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        message: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        status: {
+          type: String,
+          enum: [
+            'submitted',
+            'under_review',
+            'investigating',
+            'in_progress',
+            'resolved',
+            'rejected',
+          ],
+          required: true,
+        },
+
+        updatedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          default: null,
+        },
+
+        updatedByType: {
+          type: String,
+          enum: ['system', 'user'],
+          default: 'system',
+        },
+
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true },
 )
