@@ -1,6 +1,10 @@
 const express = require('express')
 
-const { getAllComplaints } = require('../controllers/adminController')
+const {
+  getAllComplaints,
+  getComplaintDetails,
+  assignComplaint,
+} = require('../controllers/adminController')
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth')
 
@@ -12,6 +16,22 @@ router
     isAuthenticatedUser,
     authorizeRoles('master_admin', 'admin'),
     getAllComplaints,
+  )
+
+router
+  .route('/complaints/:id')
+  .get(
+    isAuthenticatedUser,
+    authorizeRoles('master_admin', 'admin', 'officer'),
+    getComplaintDetails,
+  )
+
+router
+  .route('/complaints/:id/assign')
+  .put(
+    isAuthenticatedUser,
+    authorizeRoles('master_admin', 'admin'),
+    assignComplaint,
   )
 
 module.exports = router
