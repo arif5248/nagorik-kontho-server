@@ -80,3 +80,30 @@ exports.assignComplaint = catchAsyncError(async (req, res, next) => {
     complaint,
   })
 })
+
+exports.getFilteredOfficers = catchAsyncError(async (req, res, next) => {
+  const { department, district } = req.query
+
+  const filter = {
+    role: 'officer',
+    isActive: true,
+  }
+
+  if (department) {
+    filter.department = department
+  }
+
+  if (district) {
+    filter.district = district
+  }
+
+  const officers = await User.find(filter).select(
+    'name email role department district isActive',
+  )
+
+  res.status(200).json({
+    success: true,
+    count: officers.length,
+    officers,
+  })
+})
