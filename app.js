@@ -12,7 +12,7 @@ const admin = require('./routes/adminRoute')
 const app = express()
 
 // Middleware
-app.use(express.json())
+app.use(express.json({ limit: '1.5mb' }))
 app.use(
   fileUpload({
     useTempFiles: true,
