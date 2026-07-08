@@ -164,6 +164,8 @@ const complaintSchema = new mongoose.Schema(
           type: String,
           enum: [
             'submitted',
+            'assigned',
+            'accepted',
             'under_review',
             'investigating',
             'in_progress',
