@@ -1,6 +1,7 @@
 const Complaint = require('../models/complaintModel')
 const User = require('../models/userModel')
 const ErrorHandler = require('../utils/ErrorHandler')
+const addTrackingLog = require('../utils/addTrackingLog')
 const catchAsyncError = require('../middleware/catchAsyncError')
 
 exports.getAllComplaints = catchAsyncError(async (req, res, next) => {
@@ -64,10 +65,11 @@ exports.assignComplaint = catchAsyncError(async (req, res, next) => {
     complaint.adminNote = adminNote
   }
 
-  complaint.tracking.push({
-    title: 'Complaint Assigned',
+  addTrackingLog(complaint, {
+    title: 'Officer Assigned',
     message: `Complaint assigned to ${officer.name}`,
     status: 'assigned',
+    eventType: 'assignment',
     updatedBy: req.user._id,
     updatedByType: 'user',
   })
@@ -108,51 +110,55 @@ exports.getFilteredOfficers = catchAsyncError(async (req, res, next) => {
   })
 })
 
-exports.updateComplaintStatus = catchAsyncError(async (req, res, next) => {
-  const { status, message } = req.body
+// exports.updateComplaintStatus = catchAsyncError(async (req, res, next) => {
+//   const { status, message } = req.body
 
-  if (!status) {
-    return next(new ErrorHandler('Status is required', 400))
-  }
+//   if (!status) {
+//     return next(new ErrorHandler('Status is required', 400))
+//   }
 
-  if (!message) {
-    return next(new ErrorHandler('Update message is required', 400))
-  }
+//   if (!message) {
+//     return next(new ErrorHandler('Update message is required', 400))
+//   }
 
-  const allowedStatuses = [
-    'submitted',
-    'under_review',
-    'investigating',
-    'in_progress',
-    'resolved',
-    'rejected',
-  ]
+//   const allowedStatuses = [
+//     'investigating',
+//     'in_progress',
+//     'resolved',
+//     'rejected',
+//   ]
 
-  if (!allowedStatuses.includes(status)) {
-    return next(new ErrorHandler('Invalid status value', 400))
-  }
+//   if (!allowedStatuses.includes(status)) {
+//     return next(new ErrorHandler('Invalid status value', 400))
+//   }
 
-  const complaint = await Complaint.findById(req.params.id)
+//   const complaint = await Complaint.findById(req.params.id)
 
-  if (!complaint) {
-    return next(new ErrorHandler('Complaint not found', 404))
-  }
+//   if (!complaint) {
+//     return next(new ErrorHandler('Complaint not found', 404))
+//   }
 
-  complaint.status = status
+//   complaint.status = status
 
-  complaint.tracking.push({
-    title: `Status Updated to ${status.replace('_', ' ')}`,
-    message,
-    status,
-    updatedBy: req.user._id,
-    updatedByType: 'user',
-  })
+//   addTrackingLog(complaint, {
+//     title: `Status Updated to ${status.replace('_', ' ')}`,
+//     message,
+//     status,
+//     eventType:
+//       status === 'resolved'
+//         ? 'resolution'
+//         : status === 'rejected'
+//           ? 'rejection'
+//           : 'progress',
+//     updatedBy: req.user._id,
+//     updatedByType: 'user',
+//   })
 
-  await complaint.save()
+//   await complaint.save()
 
-  res.status(200).json({
-    success: true,
-    message: 'Complaint status updated successfully',
-    complaint,
-  })
-})
+//   res.status(200).json({
+//     success: true,
+//     message: 'Complaint status updated successfully',
+//     complaint,
+//   })
+// })

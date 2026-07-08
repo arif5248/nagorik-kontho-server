@@ -1,6 +1,9 @@
 const express = require('express')
 
-const { acceptComplaint } = require('../controllers/officerController')
+const {
+  acceptComplaint,
+  updateComplaintStatus,
+} = require('../controllers/officerController')
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth')
 
@@ -11,6 +14,13 @@ router.put(
   isAuthenticatedUser,
   authorizeRoles('officer'),
   acceptComplaint,
+)
+
+router.put(
+  '/complaints/:id/status',
+  isAuthenticatedUser,
+  authorizeRoles('officer'),
+  updateComplaintStatus,
 )
 
 module.exports = router

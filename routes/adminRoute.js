@@ -5,7 +5,6 @@ const {
   getComplaintDetails,
   assignComplaint,
   getFilteredOfficers,
-  updateComplaintStatus,
 } = require('../controllers/adminController')
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth')
@@ -44,11 +43,11 @@ router
     getFilteredOfficers,
   )
 
-router
-  .route('/complaints/:id/status')
-  .put(
-    isAuthenticatedUser,
-    authorizeRoles('master_admin', 'admin', 'officer'),
-    updateComplaintStatus,
-  )
+// router
+//   .route('/complaints/:id/status')
+//   .put(
+//     isAuthenticatedUser,
+//     authorizeRoles('master_admin', 'admin', 'officer'),
+//     updateComplaintStatus,
+//   )
 module.exports = router

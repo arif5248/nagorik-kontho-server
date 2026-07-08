@@ -1,5 +1,6 @@
 const Complaint = require('../models/complaintModel')
 const ErrorHandler = require('../utils/ErrorHandler')
+const addTrackingLog = require('../utils/addTrackingLog')
 const catchAsyncError = require('../middleware/catchAsyncError')
 const generateTicketNumber = require('../utils/generateTicketNumber')
 const sendEmail = require('../utils/sendEmail')
@@ -7,7 +8,7 @@ const cloudinary = require('../utils/cloudinary')
 
 exports.getDashboardData = catchAsyncError(async (req, res, next) => {
   const allComplaints = await Complaint.find()
-  console.log(allComplaints)
+
   const totalComplaints = await Complaint.countDocuments()
 
   const resolvedComplaints = await Complaint.countDocuments({
@@ -16,7 +17,13 @@ exports.getDashboardData = catchAsyncError(async (req, res, next) => {
 
   const activeComplaints = await Complaint.countDocuments({
     status: {
-      $in: ['submitted', 'under_review', 'investigating', 'in_progress'],
+      $in: [
+        'submitted',
+        'assigned',
+        'accepted',
+        'investigating',
+        'in_progress',
+      ],
     },
   })
 
@@ -203,22 +210,23 @@ exports.createComplaint = catchAsyncError(async (req, res, next) => {
     email,
     ticketNumber,
     evidences,
-    tracking: [
-      {
-        title: 'Complaint Submitted',
-        message:
-          'Your complaint has been successfully submitted to the system.',
-        status: 'submitted',
-        updatedByType: 'system',
-      },
-    ],
   })
+
+  addTrackingLog(complaint, {
+    title: 'Complaint Submitted',
+    message: 'Your complaint has been successfully submitted to the system.',
+    status: 'submitted',
+    eventType: 'system',
+    updatedByType: 'system',
+  })
+
+  await complaint.save()
 
   const message = `Thank you for submitting your complaint.
 
-Your ticket number is: ${ticketNumber}
+  Your ticket number is: ${ticketNumber}
 
-Please keep this ticket number for tracking your complaint status.`
+  Please keep this ticket number for tracking your complaint status.`
 
   await sendEmail({
     email,
