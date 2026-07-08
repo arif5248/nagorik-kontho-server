@@ -122,3 +122,93 @@ exports.updateComplaintStatus = catchAsyncError(async (req, res, next) => {
     complaint,
   })
 })
+
+exports.getMyAssignedComplaints = catchAsyncError(async (req, res, next) => {
+  const complaints = await Complaint.find({
+    assignedTo: req.user._id,
+  })
+    .populate('assignedBy', 'name email role')
+    .populate('tracking.updatedBy', 'name email role department')
+    .sort({ updatedAt: -1 })
+
+  res.status(200).json({
+    success: true,
+    count: complaints.length,
+    complaints,
+  })
+})
+
+exports.getMyComplaintDetails = catchAsyncError(async (req, res, next) => {
+  const complaint = await Complaint.findById(req.params.id)
+    .populate('assignedTo', 'name email role department district')
+    .populate('assignedBy', 'name email role')
+    .populate('tracking.updatedBy', 'name email role department')
+
+  if (!complaint) {
+    return next(new ErrorHandler('Complaint not found', 404))
+  }
+
+  if (!complaint.assignedTo) {
+    return next(new ErrorHandler('Complaint is not assigned yet', 400))
+  }
+
+  if (complaint.assignedTo._id.toString() !== req.user._id.toString()) {
+    return next(new ErrorHandler('You are not assigned to this complaint', 403))
+  }
+
+  res.status(200).json({
+    success: true,
+    complaint,
+  })
+})
+
+exports.getOfficerDashboard = catchAsyncError(async (req, res, next) => {
+  const officerId = req.user._id
+
+  const assigned = await Complaint.countDocuments({
+    assignedTo: officerId,
+    status: 'assigned',
+  })
+
+  const accepted = await Complaint.countDocuments({
+    assignedTo: officerId,
+    status: 'accepted',
+  })
+
+  const investigating = await Complaint.countDocuments({
+    assignedTo: officerId,
+    status: 'investigating',
+  })
+
+  const inProgress = await Complaint.countDocuments({
+    assignedTo: officerId,
+    status: 'in_progress',
+  })
+
+  const resolved = await Complaint.countDocuments({
+    assignedTo: officerId,
+    status: 'resolved',
+  })
+
+  const rejected = await Complaint.countDocuments({
+    assignedTo: officerId,
+    status: 'rejected',
+  })
+
+  const total = await Complaint.countDocuments({
+    assignedTo: officerId,
+  })
+
+  res.status(200).json({
+    success: true,
+    dashboard: {
+      total,
+      assigned,
+      accepted,
+      investigating,
+      inProgress,
+      resolved,
+      rejected,
+    },
+  })
+})
