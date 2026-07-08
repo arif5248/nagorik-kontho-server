@@ -107,3 +107,52 @@ exports.getFilteredOfficers = catchAsyncError(async (req, res, next) => {
     officers,
   })
 })
+
+exports.updateComplaintStatus = catchAsyncError(async (req, res, next) => {
+  const { status, message } = req.body
+
+  if (!status) {
+    return next(new ErrorHandler('Status is required', 400))
+  }
+
+  if (!message) {
+    return next(new ErrorHandler('Update message is required', 400))
+  }
+
+  const allowedStatuses = [
+    'submitted',
+    'under_review',
+    'investigating',
+    'in_progress',
+    'resolved',
+    'rejected',
+  ]
+
+  if (!allowedStatuses.includes(status)) {
+    return next(new ErrorHandler('Invalid status value', 400))
+  }
+
+  const complaint = await Complaint.findById(req.params.id)
+
+  if (!complaint) {
+    return next(new ErrorHandler('Complaint not found', 404))
+  }
+
+  complaint.status = status
+
+  complaint.tracking.push({
+    title: `Status Updated to ${status.replace('_', ' ')}`,
+    message,
+    status,
+    updatedBy: req.user._id,
+    updatedByType: 'user',
+  })
+
+  await complaint.save()
+
+  res.status(200).json({
+    success: true,
+    message: 'Complaint status updated successfully',
+    complaint,
+  })
+})
