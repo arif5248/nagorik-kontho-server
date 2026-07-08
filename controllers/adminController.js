@@ -58,7 +58,7 @@ exports.assignComplaint = catchAsyncError(async (req, res, next) => {
   complaint.assignedTo = officer._id
   complaint.assignedBy = req.user._id
   complaint.assignedAt = Date.now()
-  complaint.status = 'under_review'
+  complaint.status = 'assigned'
 
   if (adminNote) {
     complaint.adminNote = adminNote
@@ -67,7 +67,7 @@ exports.assignComplaint = catchAsyncError(async (req, res, next) => {
   complaint.tracking.push({
     title: 'Complaint Assigned',
     message: `Complaint assigned to ${officer.name}`,
-    status: 'under_review',
+    status: 'assigned',
     updatedBy: req.user._id,
     updatedByType: 'user',
   })

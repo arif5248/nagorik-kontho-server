@@ -8,6 +8,7 @@ const complaint = require('./routes/complaintRoute')
 const otp = require('./routes/otpRoutes')
 const auth = require('./routes/authRoute')
 const admin = require('./routes/adminRoute')
+const officer = require('./routes/officerRoute')
 
 const app = express()
 
@@ -31,6 +32,7 @@ app.use('/api/v1', complaint)
 app.use('/api/v1', otp)
 app.use('/api/v1/auth', auth)
 app.use('/api/v1/admin', admin)
+app.use('/api/v1/officer', officer)
 
 // Error Middleware
 app.use(errorMiddleware)
