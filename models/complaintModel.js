@@ -175,6 +175,21 @@ const complaintSchema = new mongoose.Schema(
           required: true,
         },
 
+        eventType: {
+          type: String,
+          enum: [
+            'system',
+            'assignment',
+            'acceptance',
+            'progress',
+            'inspection',
+            'document',
+            'resolution',
+            'rejection',
+          ],
+          default: 'progress',
+        },
+
         updatedBy: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'User',
