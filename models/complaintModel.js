@@ -203,7 +203,14 @@ const complaintSchema = new mongoose.Schema(
 
         updatedByType: {
           type: String,
-          enum: ['system', 'master_admin', 'admin', 'officer', 'citizen'],
+          enum: [
+            'system',
+            'master_admin',
+            'admin',
+            'officer',
+            'citizen',
+            'user',
+          ],
           default: 'system',
         },
 
