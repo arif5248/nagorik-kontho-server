@@ -6,8 +6,8 @@ module.exports = (
     status,
     eventType = 'progress',
     updatedBy = null,
-    updatedByName = null,
-    updatedByType = 'system',
+    updatedByName = '',
+    updatedByType = '',
   },
 ) => {
   complaint.tracking.push({
