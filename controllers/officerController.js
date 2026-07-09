@@ -46,7 +46,7 @@ exports.acceptComplaint = catchAsyncError(async (req, res, next) => {
 })
 
 exports.updateComplaintStatus = catchAsyncError(async (req, res, next) => {
-  const { status, message } = req.body
+  const { status, title, message } = req.body
 
   if (!status) {
     return next(new ErrorHandler('Status is required', 400))
@@ -54,6 +54,10 @@ exports.updateComplaintStatus = catchAsyncError(async (req, res, next) => {
 
   if (!message) {
     return next(new ErrorHandler('Update message is required', 400))
+  }
+
+  if (!title) {
+    return next(new ErrorHandler('Update title is required', 400))
   }
 
   const allowedStatuses = [
@@ -101,7 +105,7 @@ exports.updateComplaintStatus = catchAsyncError(async (req, res, next) => {
   }
 
   addTrackingLog(complaint, {
-    title: statusTitles[status],
+    title,
     message,
     status,
     eventType:
