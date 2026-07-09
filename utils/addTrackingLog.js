@@ -6,6 +6,7 @@ module.exports = (
     status,
     eventType = 'progress',
     updatedBy = null,
+    updatedByName = null,
     updatedByType = 'system',
   },
 ) => {
@@ -15,6 +16,7 @@ module.exports = (
     status,
     eventType,
     updatedBy,
+    updatedByName,
     updatedByType,
     date: new Date(),
   })

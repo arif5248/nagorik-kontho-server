@@ -115,7 +115,8 @@ exports.updateComplaintStatus = catchAsyncError(async (req, res, next) => {
           ? 'rejection'
           : 'progress',
     updatedBy: req.user._id,
-    updatedByType: 'user',
+    updatedByName: req.user.name,
+    updatedByType: req.user.role,
   })
 
   await complaint.save()
